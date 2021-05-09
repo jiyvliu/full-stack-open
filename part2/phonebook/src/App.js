@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import Filter from './components/Filter'
 import Form from './components/Form'
 import Numbers from './components/Numbers'
+import Notifications from './components/Notification'
 import phonebookService from './services/phonebook'
 
 const App = () => {
@@ -9,6 +10,8 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
+  const [message, setMessage] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
 
 
   useEffect(() => {
@@ -35,6 +38,16 @@ const App = () => {
         .then(() => {
           setPersons(persons.filter(person => person.name !== event.target.name))
         })
+        .catch(error => {
+          setErrorMessage(
+            `Information of ${event.target.name} has already been removed from server`
+          )
+          setTimeout(() => {
+            setErrorMessage(null)
+          }, 5000)
+
+          setPersons(persons.filter(person => person.name !== event.target.name))
+        })
     }
   }
 
@@ -47,6 +60,11 @@ const App = () => {
         phonebookService
           .update(personToUpdate.id, { ...personToUpdate, number: newNumber })
           .then(data => {
+            setMessage(`Added ${newName}`)
+            setTimeout(() => {
+              setMessage(null)
+            }, 5000)
+
             const filtered = persons.filter(person => person.name !== newName)
             return setPersons(filtered.concat(data))
           })
@@ -54,7 +72,14 @@ const App = () => {
     } else {
       phonebookService
         .create({ name: newName, number: newNumber })
-        .then(data => setPersons(persons.concat(data)))
+        .then(data => {
+          setPersons(persons.concat(data))
+
+          setMessage(`Added ${newName}`)
+          setTimeout(() => {
+            setMessage(null)
+          }, 5000)
+        })
     }
 
     setNewName('')
@@ -64,6 +89,8 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notifications.Notification message={message} />
+      <Notifications.ErrorNotification errorMessage={errorMessage} />
       <Filter filter={filter} handleFilter={handleFilter} />
       <h2>Add a new number</h2>
       <Form nameValue={newName} nameHandler={handleNewName}
