@@ -60,13 +60,19 @@ const App = () => {
         phonebookService
           .update(personToUpdate.id, { ...personToUpdate, number: newNumber })
           .then(data => {
-            setMessage(`Added ${newName}`)
+            setMessage(`Updated ${newName}`)
             setTimeout(() => {
               setMessage(null)
             }, 5000)
 
             const filtered = persons.filter(person => person.name !== newName)
             return setPersons(filtered.concat(data))
+          })
+          .catch(error => {
+            setErrorMessage(error.response.data)
+            setTimeout(() => {
+              setErrorMessage(null)
+            }, 5000)
           })
       }
     } else {
@@ -78,6 +84,12 @@ const App = () => {
           setMessage(`Added ${newName}`)
           setTimeout(() => {
             setMessage(null)
+          }, 5000)
+        })
+        .catch(error => {
+          setErrorMessage(error.response.data)
+          setTimeout(() => {
+            setErrorMessage(null)
           }, 5000)
         })
     }
